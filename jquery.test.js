@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom/extend-expect';
-import fs from 'fs';
-import path from 'path';
 const $ = require('jquery');
+import Timeout from 'await-timeout';
 
 beforeAll(() => {
   // Set up our document body
@@ -21,21 +20,21 @@ beforeAll(() => {
 });
 
 it('index.js agrega un nuevo item a la ol al presionar el div id="button" | Asegúrate de que al presionar el div id="Button" se agregue un nuevo item a la ol con el valor del input', () => {
-  $('input[type="text"]').val('124asd213');
+  $('input[type="text"]').val('1');
 
   $('#button').click();
 
-  expect($('li:last-child').text()).toBe('124asd213');
+  expect($('li:last-child').text()).toBe('1');
 
-  $('input[type="text"]').val('00123');
+  $('input[type="text"]').val('2');
 
   $('#button').click();
 
-  expect($('li:last-child').text()).toBe('00123');
+  expect($('li:last-child').text()).toBe('2');
 });
 
 it('index.js limpia el valor del input al hacer click | Asegúrate de que al presionar el div id="Button" se limpie el valor del input', () => {
-  $('input[type="text"]').val('124asd213');
+  $('input[type="text"]').val('3');
 
   $('#button').click();
 
@@ -43,13 +42,13 @@ it('index.js limpia el valor del input al hacer click | Asegúrate de que al pre
 });
 
 it('index.js al presionar la tecla enter se genera el evento click del div id="button" | Asegúrate de que al presionar la tecla enter se genera el evento click del div id="button"', () => {
-  $('input[type="text"]').val('124asd213');
+  $('input[type="text"]').val('4');
 
   let e = $.Event('keyup');
   e.keyCode = 13;
   $('input[type="text"]').trigger(e);
 
-  expect($('li:last-child').text()).toBe('124asd213');
+  expect($('li:last-child').text()).toBe('4');
 
   expect($('input[type="text"]').val()).toBe('');
 });
@@ -64,9 +63,29 @@ it('index.js al hacer submit la form ejecuta preventDefault | Asegúrate de que 
   expect(e.preventDefault).toBeCalled();
 });
 
-it('index.js maneja el doble click en li | Asegúrate de manejar el evento "dblclick" en los li', () => {
-  var file = fs.readFileSync(path.resolve(__dirname, './index.js'), 'utf8');
-  const regex =
-    /\$\(document\).on\('dblclick', 'li', (function)?[\s]*\(\)[\s]*(=>)?[\s]*{[\n\d\D]*}\);?/;
-  expect(regex.test(file)).toBe(true);
+it('index.js al dar doble click en un li se asigna la clase "strike" y 500ms despues se elimina el elemento | Asegúrate que al dar doble click en un li se asigna la clase "strike" y 500ms despues se elimine el elemento', async () => {
+  let dbl = $.Event('dblclick');
+  let e = $.Event('keyup');
+
+  $('input[type="text"]').val('a eliminar');
+
+  e.keyCode = 13;
+  $('input[type="text"]').trigger(e);
+
+  let lastLi = $('li:last-child');
+
+  expect(lastLi.hasClass('strike')).toBe(false);
+
+  const children = $('ol').children().length;
+
+  lastLi.trigger(dbl);
+
+  await Timeout.set(500);
+
+  expect(lastLi.hasClass('strike')).toBe(true);
+
+  await Timeout.set(500);
+
+  expect($('ol').children().length).toBe(children - 1);
+  expect($('li:last-child').text()).not.toBe('a eliminar');
 });

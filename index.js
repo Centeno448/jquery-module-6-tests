@@ -16,4 +16,11 @@ $('form').on('submit', function (e) {
   e.preventDefault();
 });
 
-$(document).on('dblclick', 'li', function () {});
+$(document).on('dblclick', 'li', function () {
+  $(this)
+    .toggleClass('strike')
+
+    .fadeOut(500, function () {
+      $(this).remove();
+    });
+});
